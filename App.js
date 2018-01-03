@@ -1,16 +1,22 @@
 import React from "react";
 import {
+  AppRegistry,
   Image,
   TextInput,
   View,
   TouchableOpacity,
-  ScrollView
+  ScrollView,
+  StatusBar
 } from "react-native";
 import Alea from "./util/alea.min";
 import PixelGrid from "./src/PixelGrid";
 import cs from "./src/configs";
 
-Expo.ScreenOrientation.allow(Expo.ScreenOrientation.Orientation.PORTRAIT);
+let _ = require("lodash");
+
+AppRegistry.registerComponent("1Monkey", () => App);
+
+// Expo.ScreenOrientation.allow(Expo.ScreenOrientation.Orientation.PORTRAIT);
 
 let tickTimeout;
 let toggleTick = true;
@@ -28,6 +34,7 @@ export default class App extends React.Component {
       seedNumber2: 0,
       history: []
     };
+    _.throttle(this.toggleColor.bind(this), 200);
   }
 
   componentDidMount() {
@@ -128,8 +135,7 @@ export default class App extends React.Component {
   };
 
   render() {
-    const buttonStyle = {
-    };
+    const buttonStyle = {};
 
     const buttonOpacStyle = {
       paddingLeft: 30,
@@ -233,6 +239,7 @@ export default class App extends React.Component {
           justifyContent: "center"
         }}
       >
+        <StatusBar hidden />
         <TextInput
           placeholder="Enter Seed"
           style={{
