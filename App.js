@@ -12,13 +12,10 @@ import Alea from "./util/alea.min";
 import PixelGrid from "./src/PixelGrid";
 import cs from "./src/configs";
 
-let _ = require("lodash");
-
 AppRegistry.registerComponent("1Monkey", () => App);
 
-// Expo.ScreenOrientation.allow(Expo.ScreenOrientation.Orientation.PORTRAIT);
-
 let tickTimeout;
+let disabledTimeout;
 let toggleTick = true;
 
 export default class App extends React.Component {
@@ -34,7 +31,6 @@ export default class App extends React.Component {
       seedNumber2: 0,
       history: []
     };
-    _.throttle(this.toggleColor.bind(this), 200);
   }
 
   componentDidMount() {
@@ -47,6 +43,10 @@ export default class App extends React.Component {
       this.playTick();
     }
   }
+
+  free = () => {
+    this.setState({ disabled: false });
+  };
 
   setHistory = (s1, s2, seed) => {
     if (!this.state.firstTime) {
@@ -66,6 +66,7 @@ export default class App extends React.Component {
   };
 
   getHistory = () => {
+    this.setState({ disabled: true });
     this.togglePlay(false);
     if (this.state.history.length > 0) {
       const seeds = this.state.history.pop();
@@ -76,6 +77,8 @@ export default class App extends React.Component {
         seedText: seeds[2]
       });
     }
+    clearTimeout(disabledTimeout);
+    disabledTimeout = setTimeout(this.free, 10);
   };
 
   randomize = () => {
@@ -113,13 +116,21 @@ export default class App extends React.Component {
   };
 
   toggleColor = () => {
-    this.setState({ colorMode: !this.state.colorMode });
+    this.setState({ disabled: true, colorMode: !this.state.colorMode });
+    clearTimeout(disabledTimeout);
+    disabledTimeout = setTimeout(this.free, 10);
   };
 
   togglePlay = set => {
+    this.setState({ disabled: true });
+
     if (this.state.playMode) {
       clearTimeout(tickTimeout);
     }
+
+    clearTimeout(disabledTimeout);
+    disabledTimeout = setTimeout(this.free, 10);
+
     typeof set === "boolean"
       ? this.setState({ playMode: set })
       : this.setState({ playMode: !this.state.playMode });
@@ -197,19 +208,31 @@ export default class App extends React.Component {
     );
 
     colorButton = (
-      <TouchableOpacity onPress={this.toggleColor} style={buttonOpacStyle}>
+      <TouchableOpacity
+        onPress={this.toggleColor}
+        style={buttonOpacStyle}
+        disabled={this.state.disabled}
+      >
         {colorButton}
       </TouchableOpacity>
     );
     backButton = (
-      <TouchableOpacity onPress={this.getHistory} style={buttonOpacStyle}>
+      <TouchableOpacity
+        onPress={this.getHistory}
+        style={buttonOpacStyle}
+        disabled={this.state.disabled}
+      >
         {backButton}
         {backButtonEnd}
         {backButtonStretch}
       </TouchableOpacity>
     );
     playButton = (
-      <TouchableOpacity onPress={this.togglePlay} style={buttonOpacStyle}>
+      <TouchableOpacity
+        onPress={this.togglePlay}
+        style={buttonOpacStyle}
+        disabled={this.state.disabled}
+      >
         {playButton}
       </TouchableOpacity>
     );
@@ -217,9 +240,14 @@ export default class App extends React.Component {
     const pixelGrid = (
       <TouchableOpacity
         onPress={() => {
+          this.setState({ disabled: true });
+          console.log("DISABLED!");
           this.randomize();
           this.togglePlay(false);
+          clearTimeout(disabledTimeout);
+          disabledTimeout = setTimeout(this.free, 10);
         }}
+        disabled={this.state.disabled}
       >
         <PixelGrid
           seed1={this.state.seedNumber1}
@@ -239,7 +267,6 @@ export default class App extends React.Component {
           justifyContent: "center"
         }}
       >
-        <StatusBar hidden />
         <TextInput
           placeholder="Enter Seed"
           style={{
@@ -260,6 +287,9 @@ export default class App extends React.Component {
             });
           }}
           onSubmitEditing={event => {
+            this.setState({ disabled: true });
+            clearTimeout(disabledTimeout);
+            disabledTimeout = setTimeout(this.free, 10);
             this.genSeedNumber(event.nativeEvent.text, this.state.seed);
           }}
           value={this.state.seedText}

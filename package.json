@@ -30,7 +30,6 @@
     "babel-preset-react-native": "2.1.0",
     "eslint": "^4.13.1",
     "global": "^4.3.2",
-    "lodash": "^4.17.4",
     "react": "16.0.0",
     "react-native": "0.50.3",
     "watchman": "^1.0.0"
